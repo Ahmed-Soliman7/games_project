@@ -16,8 +16,22 @@ public:
     bool is_lose(Player<char>* player);
     bool is_draw(Player<char>* player);
     bool game_is_over(Player<char>* player);
-
     int get_lowest_empty_row(int col);
+    vector<int> get_available_columns();
+    bool is_column_full(int col);
+};
+
+class Smart_Four_AI : public Player<char> {
+private:
+    int minimax(Four_in_a_row_Board* board, int depth, bool maximizing,
+        int alpha, int beta, char ai_symbol);
+    int evaluate_position(Four_in_a_row_Board* board, char symbol);
+    int count_windows(Four_in_a_row_Board* board, char symbol);
+
+public:
+    Smart_Four_AI(string name, char symbol, PlayerType type);
+    ~Smart_Four_AI() {}
+    int get_smart_move(Four_in_a_row_Board* board);
 };
 
 class Four_in_a_row_UI : public UI<char> {
