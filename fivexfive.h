@@ -13,6 +13,9 @@ private:
 
     int count_three_in_a_row(char symbol);
 
+    // New AI functions
+    int evaluate_move(int x, int y, char symbol);  // Evaluate a specific move
+
 public:
     fivexfive_Board();
 
@@ -26,8 +29,10 @@ public:
 
     bool game_is_over(Player<char>* player) override;
 
-    
     int get_score(char symbol);
+
+    // New AI functions
+    pair<int, int> find_best_move(char symbol);  // Find the best move
 };
 
 
