@@ -5,6 +5,7 @@
 #include <set>
 #include <string>
 #include <fstream>
+#include <vector>
 
 using namespace std;
 
@@ -14,12 +15,17 @@ private:
     set<string> dictionary; 
     
     void load_dictionary();
-    bool check_word(int row, int col, int dx, int dy); 
 
 public:
     Word_Board();
     
     bool update_board(Move<char>* move);
+    
+    bool check_word(int row, int col, int dx, int dy);
+    
+    char get_cell(int x, int y) { return board[x][y]; }
+    
+    void set_cell(int x, int y, char value) { board[x][y] = value; }
     
     bool is_win(Player<char>* player);
     
