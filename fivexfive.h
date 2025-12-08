@@ -7,11 +7,14 @@ using namespace std;
 
 class fivexfive_Board : public Board<char> {
 private:
-    char blank_symbol = '.';
-    int player1_score = 0;
+    char blank_symbol = '.'; 
+    int player1_score = 0;  
     int player2_score = 0;
 
     int count_three_in_a_row(char symbol);
+
+    // AI functions
+    int evaluate_move(int x, int y, char symbol);
 
 public:
     fivexfive_Board();
@@ -26,8 +29,10 @@ public:
 
     bool game_is_over(Player<char>* player) override;
 
-
     int get_score(char symbol);
+
+    // AI functions
+    pair<int, int> find_best_move(char symbol);
 };
 
 
@@ -43,4 +48,3 @@ public:
 };
 
 #endif
-
