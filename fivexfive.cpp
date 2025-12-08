@@ -8,6 +8,8 @@
 using namespace std;
 
 fivexfive_Board::fivexfive_Board() : Board(5, 5) {
+    srand(time(0));  // Initialize random seed
+    
     // Initialize all cells with blank_symbol
     for (auto& row : board)
         for (auto& cell : row)
@@ -172,28 +174,44 @@ int fivexfive_Board::evaluate_move(int x, int y, char symbol) {
 }
 
 pair<int, int> fivexfive_Board::find_best_move(char symbol) {
-    int bestScore = -10000;
+    int bestScore = -100000;
     int bestX = -1, bestY = -1;
+    int emptyCount = 0;
+    
+    // Add extra randomness to differentiate between players
+    int playerOffset = (symbol == 'X') ? 0 : 12345;
+    
+    // First, count empty cells
+    for (int i = 0; i < 5; i++) {
+        for (int j = 0; j < 5; j++) {
+            if (board[i][j] == blank_symbol) {
+                emptyCount++;
+            }
+        }
+    }
+    
+    // If no empty cells, return invalid move
+    if (emptyCount == 0) {
+        cout << "ERROR: No empty cells available!" << endl;
+        return {-1, -1};
+    }
     
     for (int i = 0; i < 5; i++) {
         for (int j = 0; j < 5; j++) {
             if (board[i][j] == blank_symbol) {
+                // Set bestX, bestY to first available cell as fallback
+                if (bestX == -1) {
+                    bestX = i;
+                    bestY = j;
+                }
+                
+                srand(time(0) + n_moves + playerOffset + i * 10 + j);
                 int score = evaluate_move(i, j, symbol);
                 
                 if (score > bestScore) {
                     bestScore = score;
                     bestX = i;
                     bestY = j;
-                }
-            }
-        }
-    }
-    
-    if (bestX == -1) {
-        for (int i = 0; i < 5; i++) {
-            for (int j = 0; j < 5; j++) {
-                if (board[i][j] == blank_symbol) {
-                    return {i, j};
                 }
             }
         }
@@ -207,6 +225,18 @@ int fivexfive_Board::get_score(char symbol) {
 }
 
 bool fivexfive_Board::is_win(Player<char>* player) {
+    // Check if game ended and this player won
+    if (n_moves >= 24) {
+        player1_score = count_three_in_a_row('X');
+        player2_score = count_three_in_a_row('O');
+        
+        if (player->get_symbol() == 'X' && player1_score > player2_score) {
+            return true;
+        }
+        if (player->get_symbol() == 'O' && player2_score > player1_score) {
+            return true;
+        }
+    }
     return false;
 }
 
@@ -228,6 +258,18 @@ bool fivexfive_Board::game_is_over(Player<char>* player) {
     if (n_moves >= 24) {
         player1_score = count_three_in_a_row('X');
         player2_score = count_three_in_a_row('O');
+        
+        cout << "\n=== GAME OVER ===" << endl;
+        cout << "Player X score: " << player1_score << endl;
+        cout << "Player O score: " << player2_score << endl;
+        
+        if (player1_score > player2_score) {
+            cout << "Player X WINS!" << endl;
+        } else if (player2_score > player1_score) {
+            cout << "Player O WINS!" << endl;
+        } else {
+            cout << "It's a DRAW!" << endl;
+        }
         
         return true;
     }
@@ -251,6 +293,11 @@ Move<char>* fivexfive_UI::get_move(Player<char>* player) {
     
     fivexfive_Board* board_ptr = static_cast<fivexfive_Board*>(player->get_board_ptr());
     
+    // Check if game is over before getting move
+    if (board_ptr->get_n_moves() >= 24) {
+        return new Move<char>(-1, -1, player->get_symbol());
+    }
+    
     if (player->get_type() == PlayerType::HUMAN) {
         cout << "\n" << player->get_name() << " (" << player->get_symbol() << "), enter your move (row column) [0-4]: ";
         cin >> x >> y;
@@ -259,6 +306,11 @@ Move<char>* fivexfive_UI::get_move(Player<char>* player) {
         auto best_move = board_ptr->find_best_move(player->get_symbol());
         x = best_move.first;
         y = best_move.second;
+        
+        // If no valid move found, game is over
+        if (x == -1) {
+            return new Move<char>(-1, -1, player->get_symbol());
+        }
         
         cout << "Computer (" << player->get_symbol() << ") plays at (" << x << ", " << y << ")" << endl;
     }
