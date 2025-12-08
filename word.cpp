@@ -2,6 +2,7 @@
 #include <iomanip>
 #include <cctype>
 #include <algorithm>
+#include <vector>
 #include "word.h"
 
 using namespace std;
@@ -38,7 +39,7 @@ bool Word_Board::update_board(Move<char>* move) {
     if (!(x < 0 || x >= rows || y < 0 || y >= columns) &&
         (board[x][y] == blank_symbol || mark == 0)) {
 
-        if (mark == 0) {
+        if (mark == 0) { // undo move
             n_moves--;
             board[x][y] = blank_symbol;
         }
@@ -123,10 +124,80 @@ Move<char>* Word_UI::get_move(Player<char>* player) {
         cin >> x >> y >> letter;
     }
     else if (player->get_type() == PlayerType::COMPUTER) {
-        x = rand() % player->get_board_ptr()->get_rows();
-        y = rand() % player->get_board_ptr()->get_columns();
+        Word_Board* board = dynamic_cast<Word_Board*>(player->get_board_ptr());
+        bool found_move = false;
         
-        letter = 'A' + (rand() % 26);
+        // Try all empty cells with all letters
+        for (int i = 0; i < 3 && !found_move; i++) {
+            for (int j = 0; j < 3 && !found_move; j++) {
+                if (board->get_cell(i, j) == '.') {
+                    // Try every letter
+                    for (char c = 'A'; c <= 'Z' && !found_move; c++) {
+
+                        // Save original state
+                        board->set_cell(i, j, c);
+                        
+                        // If this move wins, take it!
+                        if (board->is_win(player)) {
+                            x = i;
+                            y = j;
+                            letter = c;
+                            found_move = true;
+                        }
+                        
+                        // Restore the cell
+                        board->set_cell(i, j, '.');
+                    }
+                }
+            }
+        }
+        
+        // If no winning move found, try to block or complete a word
+        if (!found_move) {
+            for (int i = 0; i < 3 && !found_move; i++) {
+                for (int j = 0; j < 3 && !found_move; j++) {
+                    if (board->get_cell(i, j) == '.') {
+                        for (char c = 'A'; c <= 'Z' && !found_move; c++) {
+
+                            board->set_cell(i, j, c);
+                            
+                            // If this move completes a word in any direction
+                            if (board->check_word(i, 0, 0, 1) || 
+                                board->check_word(0, j, 1, 0) ||
+                                board->check_word(0, 0, 1, 1) ||
+                                board->check_word(0, 2, 1, -1)) {
+
+                                x = i;
+                                y = j;
+                                letter = c;
+                                found_move = true;
+                            }
+                            
+                            board->set_cell(i, j, '.');
+                        }
+                    }
+                }
+            }
+        }
+        
+        // If still no move, pick random empty spot
+        if (!found_move) {
+            vector<pair<int, int>> empty_cells;
+            for (int i = 0; i < 3; i++) {
+                for (int j = 0; j < 3; j++) {
+                    if (board->get_cell(i, j) == '.') {
+                        empty_cells.push_back({i, j});
+                    }
+                }
+            }
+            
+            if (!empty_cells.empty()) {
+                int random_idx = rand() % empty_cells.size();
+                x = empty_cells[random_idx].first;
+                y = empty_cells[random_idx].second;
+                letter = 'A' + (rand() % 26);
+            }
+        }
     }
     
     return new Move<char>(x, y, toupper(letter));
