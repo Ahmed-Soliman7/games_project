@@ -344,7 +344,7 @@ Move<char>* Diamond_UI::get_move(Player<char>* player) {
         }
 
         num = best_move;
-        cout << "Computer plays " << num << " " << symbol << " (score: " << best_score << ")" << endl;
+        cout << "Computer plays " << num << " " << symbol << endl;
     }
 
     int x = cells[num - 1].first;
