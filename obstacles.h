@@ -26,6 +26,8 @@ public:
 
 
 class obstacles_UI : public UI<char> {
+private:
+    char blank_symbol = '.'; ///< Character used to represent an empty cell on the board.
 public:
     obstacles_UI();
 
