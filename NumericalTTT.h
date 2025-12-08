@@ -14,12 +14,17 @@ public:
     NumericalTTT_Board(int rows = 3, int cols = 3);
     bool update_board(Move<int>* move) override;
     bool is_win(Player<int>* player) override;
-    bool is_lose(Player<int>* player) override { return false; } 
+    bool is_lose(Player<int>* player) override { return false; }
     bool is_draw(Player<int>* player) override;
     bool game_is_over(Player<int>* player) override;
 };
 
 class NumericalTTT_UI : public UI<int> {
+private:
+    int minimax(vector<vector<int>> board, vector<bool> used,
+        int moves, bool is_ai, int depth);
+    bool check_win(const vector<vector<int>>& board);
+    int evaluate(vector<vector<int>>& board);
 public:
     NumericalTTT_UI();
     Player<int>** setup_players() override;
